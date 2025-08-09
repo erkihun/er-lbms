@@ -1,30 +1,27 @@
 import axios from "axios";
-import { getToken, removeToken } from "../utils/auth";
 
-const api = axios.create({
+// Create a single instance and export it directly
+export default axios.create({
   baseURL: "https://back-end-for-assessment.vercel.app/api",
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
-api.interceptors.request.use(
-  (config) => {
-    const token = getToken();
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
+// Add interceptors to the exported instance
+const apiInstance = axios.create({
+  baseURL: "https://back-end-for-assessment.vercel.app/api",
+  headers: {
+    "Content-Type": "application/json",
   },
-  (error) => Promise.reject(error)
-);
+});
 
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      removeToken();
-      window.location.href = "/login";
-    }
-    return Promise.reject(error);
+apiInstance.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
-);
+  return config;
+});
 
-export default api;
+export { apiInstance };

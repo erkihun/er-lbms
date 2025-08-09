@@ -1,22 +1,7 @@
-import api from "./axios";
+import { apiInstance } from "./axios";
 
-export const getGenres = async (params = {}) => {
-  const response = await api.get("/genres", { params });
-  return response.data;
-};
-
-// Add other genre-related API functions as needed
-export const createGenre = async (genreData) => {
-  const response = await api.post("/genres", genreData);
-  return response.data;
-};
-
-export const updateGenre = async (id, genreData) => {
-  const response = await api.patch(`/genres/${id}`, genreData);
-  return response.data;
-};
-
-export const deleteGenre = async (id) => {
-  const response = await api.delete(`/genres/${id}`);
-  return response.data;
-};
+export const getGenres = () => apiInstance.get("/genres");
+export const getPopularGenres = () => apiInstance.get("/genres/popular");
+export const createGenre = (data) => apiInstance.post("/genres", data);
+export const updateGenre = (id, data) => apiInstance.put(`/genres/${id}`, data);
+export const deleteGenre = (id) => apiInstance.delete(`/genres/${id}`);

@@ -1,36 +1,8 @@
-import api from "./axios";
+import { apiInstance } from "./axios";
 
-export const getBooks = async (params = {}) => {
-  const response = await api.get("/books", { params });
-  return response.data;
-};
-
-export const getBook = async (id) => {
-  const response = await api.get(`/books/${id}`);
-  return response.data;
-};
-
-export const createBook = async (bookData) => {
-  const response = await api.post("/books", bookData);
-  return response.data;
-};
-
-export const updateBook = async (id, bookData) => {
-  const response = await api.patch(`/books/${id}`, bookData);
-  return response.data;
-};
-
-export const deleteBook = async (id) => {
-  const response = await api.delete(`/books/${id}`);
-  return response.data;
-};
-
-export const getBookStats = async () => {
-  const response = await api.get("/books/stats");
-  return response.data;
-};
-
-export const getBookStatsByGenre = async () => {
-  const response = await api.get("/books/stats/by-genre");
-  return response.data;
-};
+export const getBooks = (params = {}) => apiInstance.get("/books", { params });
+export const getBook = (id) => apiInstance.get(`/books/${id}`);
+export const createBook = (data) => apiInstance.post("/books", data);
+export const updateBook = (id, data) => apiInstance.put(`/books/${id}`, data);
+export const deleteBook = (id) => apiInstance.delete(`/books/${id}`);
+export const getBooksCount = () => apiInstance.get("/books/count");

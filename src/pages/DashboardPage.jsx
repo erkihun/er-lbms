@@ -1,7 +1,7 @@
-import StatsCards from "../components/dashboard/StatsCards.jsx";
-import QuickActions from "../components/dashboard/QuickActions.jsx";
-import RecentBorrows from "../components/borrows/RecentBorrows.jsx";
-import PopularGenres from "../components/genres/PopularGenres.jsx";
+import StatsCards from "../components/dashboard/StatsCards";
+import QuickActions from "../components/dashboard/QuickActions";
+import RecentBorrows from "../components/borrows/RecentBorrows";
+import PopularGenres from "../components/genres/PopularGenres";
 
 const Dashboard = () => {
   return (

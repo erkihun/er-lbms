@@ -8,5 +8,14 @@ export default defineConfig({
   define: {
     "process.env": process.env,
   },
+  server: {
+    proxy: {
+      "/api": {
+        target: "https://back-end-for-assessment.vercel.app",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, "/api"),
+      },
+    },
+  },
   base: process.env.VITE_BASE_PATH || "/er-lbms",
 });

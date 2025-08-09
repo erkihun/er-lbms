@@ -1,203 +1,186 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
-import { PencilIcon, TrashIcon, EyeIcon } from "@heroicons/react/24/outline";
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { getBooks } from "../../api/books";
+import { FaEdit, FaTrash } from "react-icons/fa";
 
-const BookList = ({ books, loading, onDelete }) => {
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-  const navigate = useNavigate();
-  const { isAdmin, isLibrarian } = useAuth();
+const BookList = () => {
+  const [books, setBooks] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterGenre, setFilterGenre] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [genres, setGenres] = useState([]);
 
-  const handleChangePage = (newPage) => {
-    setPage(newPage);
-  };
+  useEffect(() => {
+    const fetchBooks = async () => {
+      try {
+        const params = {};
+        if (searchTerm) params.search = searchTerm;
+        if (filterGenre) params.genre = filterGenre;
 
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
+        const response = await getBooks(params);
+        setBooks(response.data);
+
+        // Extract unique genres from books
+        const uniqueGenres = [
+          ...new Set(response.data.map((book) => book.genre)),
+        ];
+        setGenres(uniqueGenres);
+      } catch (error) {
+        console.error("Error fetching books:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBooks();
+  }, [searchTerm, filterGenre]);
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="bg-white rounded-xl shadow-md overflow-hidden">
+        <div className="p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="h-8 bg-gray-300 rounded w-1/4"></div>
+          <div className="flex space-x-3">
+            <div className="h-10 bg-gray-300 rounded w-32"></div>
+            <div className="h-10 bg-gray-300 rounded w-32"></div>
+          </div>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                {["Title", "Author", "Genre", "Copies", "Actions"].map(
+                  (header) => (
+                    <th
+                      key={header}
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      <div className="h-4 bg-gray-300 rounded w-3/4"></div>
+                    </th>
+                  )
+                )}
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {[...Array(5)].map((_, i) => (
+                <tr key={i}>
+                  {[...Array(5)].map((_, j) => (
+                    <td key={j} className="px-6 py-4 whitespace-nowrap">
+                      <div className="h-4 bg-gray-300 rounded w-3/4"></div>
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-white shadow rounded-lg overflow-hidden">
+    <div className="bg-white rounded-xl shadow-md overflow-hidden">
+      <div className="p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <h2 className="text-xl font-bold">Book Inventory</h2>
+        <div className="flex flex-col md:flex-row gap-3">
+          <input
+            type="text"
+            placeholder="Search books..."
+            className="px-4 py-2 border rounded-lg"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <select
+            className="px-4 py-2 border rounded-lg"
+            value={filterGenre}
+            onChange={(e) => setFilterGenre(e.target.value)}
+          >
+            <option value="">All Genres</option>
+            {genres.map((genre, index) => (
+              <option key={index} value={genre}>
+                {genre}
+              </option>
+            ))}
+          </select>
+          <Link
+            to="/books/new"
+            className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition flex items-center justify-center"
+          >
+            Add New Book
+          </Link>
+        </div>
+      </div>
+
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Title
               </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Author
               </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                ISBN
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Genre
               </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Copies
               </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                Status
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Actions
               </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {books
-              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              .map((book) => (
-                <tr key={book._id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {book.title}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {book.author}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {book.isbn}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {book.genre?.name}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {book.availableCopies}/{book.totalCopies}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        book.availableCopies > 0
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
-                      }`}
-                    >
-                      {book.availableCopies > 0 ? "Available" : "Unavailable"}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => navigate(`/books/${book._id}`)}
-                        className="text-blue-600 hover:text-blue-900"
-                      >
-                        <EyeIcon className="h-5 w-5" />
-                      </button>
-                      {(isAdmin || isLibrarian) && (
-                        <button
-                          onClick={() => navigate(`/books/${book._id}/edit`)}
-                          className="text-indigo-600 hover:text-indigo-900"
-                        >
-                          <PencilIcon className="h-5 w-5" />
-                        </button>
-                      )}
-                      {isAdmin && (
-                        <button
-                          onClick={() => onDelete(book._id)}
-                          disabled={book.availableCopies !== book.totalCopies}
-                          className={`${
-                            book.availableCopies !== book.totalCopies
-                              ? "text-gray-400 cursor-not-allowed"
-                              : "text-red-600 hover:text-red-900"
-                          }`}
-                        >
-                          <TrashIcon className="h-5 w-5" />
-                        </button>
-                      )}
+            {books.map((book) => (
+              <tr key={book._id}>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0 h-10 w-10 bg-gray-200 rounded-md flex items-center justify-center">
+                      <span className="text-gray-500 text-xs">Cover</span>
                     </div>
-                  </td>
-                </tr>
-              ))}
+                    <div className="ml-4">
+                      <div className="text-sm font-medium text-gray-900">
+                        {book.title}
+                      </div>
+                      <div className="text-sm text-gray-500">{book.isbn}</div>
+                    </div>
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {book.author}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {book.genre}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span
+                    className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                    ${
+                      book.availableCopies > 0
+                        ? "bg-green-100 text-green-800"
+                        : "bg-red-100 text-red-800"
+                    }`}
+                  >
+                    {book.availableCopies} / {book.totalCopies} available
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex space-x-2">
+                  <Link
+                    to={`/books/${book._id}`}
+                    className="text-indigo-600 hover:text-indigo-900 flex items-center"
+                  >
+                    <FaEdit className="mr-1" /> Edit
+                  </Link>
+                  <button className="text-red-600 hover:text-red-900 flex items-center">
+                    <FaTrash className="mr-1" /> Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
-      </div>
-      <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-        <div className="flex-1 flex justify-between sm:hidden">
-          <button
-            onClick={() => handleChangePage(page - 1)}
-            disabled={page === 0}
-            className={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md ${
-              page === 0
-                ? "bg-gray-100 text-gray-400"
-                : "bg-white text-gray-700 hover:bg-gray-50"
-            }`}
-          >
-            Previous
-          </button>
-          <button
-            onClick={() => handleChangePage(page + 1)}
-            disabled={page >= Math.ceil(books.length / rowsPerPage) - 1}
-            className={`ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md ${
-              page >= Math.ceil(books.length / rowsPerPage) - 1
-                ? "bg-gray-100 text-gray-400"
-                : "bg-white text-gray-700 hover:bg-gray-50"
-            }`}
-          >
-            Next
-          </button>
-        </div>
-        <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-          <div>
-            <p className="text-sm text-gray-700">
-              Showing{" "}
-              <span className="font-medium">{page * rowsPerPage + 1}</span> to{" "}
-              <span className="font-medium">
-                {Math.min((page + 1) * rowsPerPage, books.length)}
-              </span>{" "}
-              of <span className="font-medium">{books.length}</span> results
-            </p>
-          </div>
-          <div>
-            <nav
-              className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
-              aria-label="Pagination"
-            >
-              <select
-                value={rowsPerPage}
-                onChange={handleChangeRowsPerPage}
-                className="appearance-none bg-white border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              >
-                {[5, 10, 25].map((size) => (
-                  <option key={size} value={size}>
-                    Show {size}
-                  </option>
-                ))}
-              </select>
-            </nav>
-          </div>
-        </div>
       </div>
     </div>
   );
